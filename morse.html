@@ -1,0 +1,189 @@
+<html>
+<head>
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+        .blinker {
+            width:100%;
+            height:100%;
+            position: relative;
+        }
+        .countdown {
+            font-family: Arial, Helvetica, sans-serif;
+            font-size: 50vw;
+            color: #fff;
+            position: absolute;
+            margin-top: 50%;
+            margin-left: 50%;
+            transform: translate3d(-50%,-50%,0);
+        }
+    </style>
+
+    <title>Final Four Morse Code Prototype</title>
+</head>
+<body>
+    <div id="blinker" class="blinker">
+        <h1 id="countdown" class="countdown"></h1>
+    </div>
+    
+    <script src="NoSleep.min.js"></script>
+    <script>
+        var blinkerElement = document.getElementById('blinker');
+        var countdownElement = document.getElementById('countdown');
+        var blinkInterval = 200;
+        var team = 1;
+        var onColor = '#000000';
+        var offColor = '#ffffff';
+        var morseString = '--. --- / - . .- --';
+        var morseLoopLength = 10800;
+        var noSleep = new NoSleep();
+
+        var init = function(){
+            if(window.location.hash){
+                team = window.location.hash[1];
+            }
+
+            switch(team){
+                case '1':
+                onColor = '#002F87';
+                offColor = '#ffffff';
+                morseString = '--. --- / - . .- --';
+                break;
+
+                case '2':
+                onColor = '#b21569';
+                offColor = '#ffffff';
+                morseString = '--. --- / - . .- --';
+                break;
+
+                case '3':
+                onColor = '#256605';
+                offColor = '#ffffff';
+                morseString = '--. --- / - . .- --';
+                break;
+
+                case '4':
+                onColor = '#1b0696';
+                offColor = '#efd110';
+                morseString = '--. --- / - . .- --';
+                break;
+                
+                default:
+                onColor = '#000000';
+                offColor = '#ffffff';
+                morseString = '--. --- / - . .- --';
+                break;
+            }
+            morseLoopLength = getMorseStringLength(morseString);
+
+            //Set initial styles
+            blinkerOn();
+
+            //Calculaate time to start
+            var currentTime = Date.now();
+            var remainder = currentTime % morseLoopLength;
+            var timeToNextLoop = morseLoopLength - remainder;
+
+            if(remainder == 0){
+                parseMorseString(morseString, true);
+            }else{
+                setTimeout(function(){
+                    parseMorseString(morseString, true);
+                }, timeToNextLoop);
+
+                //Show countdown timer
+                var countdownCount = Math.floor(timeToNextLoop/1000);
+                var countdownInterval = setInterval(function(){
+                    if(countdownCount <= 0){
+                        clearInterval(countdownInterval);
+                        countdownElement.style.display = 'none';
+                    }
+                    
+                    console.log('Waiting to start', countdownCount);
+
+                    countdownElement.innerHTML = countdownCount.toString();
+                    countdownCount -= 1;
+                }, 1000);
+            }
+
+            //Prevent sleep and hide browser chrome
+            document.addEventListener('touchstart', enableNoSleep, false);
+
+            //TODO: hide browser chrome on mobile: https://developers.google.com/web/fundamentals/native-hardware/fullscreen/
+            // window.addEventListener("load",function() {
+            //     setTimeout(function(){
+            //         window.scrollTo(0, 1);
+            //     }, 0);
+            // });
+        }
+        var blinkerOn = function(){
+            blinkerElement.style.backgroundColor = onColor;
+        }
+        var blinkerOff = function(){
+            blinkerElement.style.backgroundColor = offColor;
+        }
+        var getMorseStringLength = function(morseString){
+            var currentDelay = 0;
+            for(var i = 0; i < morseString.length; i += 1){
+                if(morseString[i] == '.'){
+                    currentDelay += blinkInterval;
+                    currentDelay += blinkInterval;
+                }
+                if(morseString[i] == '-'){
+                    currentDelay += blinkInterval * 3;
+                    currentDelay += blinkInterval;
+                }
+                if(morseString[i] == ' '){
+                    currentDelay += blinkInterval;
+                }
+                if(morseString[i] == '/'){
+                    currentDelay += blinkInterval * 6;
+                }
+            }
+            return currentDelay;
+        }
+        var parseMorseString = function(morseString, shouldLoop){
+            var currentDelay = 0;
+            for(var i = 0; i < morseString.length; i += 1){
+                if(morseString[i] == '.'){
+                    window.setTimeout(blinkerOn, currentDelay);
+                    currentDelay += blinkInterval;
+                    window.setTimeout(blinkerOff, currentDelay);
+                    currentDelay += blinkInterval;
+                }
+                if(morseString[i] == '-'){
+                    window.setTimeout(blinkerOn, currentDelay);
+                    currentDelay += blinkInterval * 3;
+                    window.setTimeout(blinkerOff, currentDelay);
+                    currentDelay += blinkInterval;
+                }
+                if(morseString[i] == ' '){
+                    window.setTimeout(blinkerOff, currentDelay);
+                    currentDelay += blinkInterval;
+                }
+                if(morseString[i] == '/'){
+                    window.setTimeout(blinkerOff, currentDelay);
+                    currentDelay += blinkInterval * 6;
+                }
+            }
+            if(shouldLoop){
+                window.setTimeout(function(){
+                    parseMorseString(morseString, shouldLoop);
+                }, currentDelay);
+            }
+        }
+        var enableNoSleep = function(){
+            //https://davidwalsh.name/wake-lock-shim
+            noSleep.enable();
+            document.removeEventListener('touchstart', enableNoSleep, false);
+        }
+
+        init();
+    </script>
+</body>
+</html>

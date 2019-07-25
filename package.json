@@ -1,0 +1,12 @@
+{
+  "name": "ffcb_prototype",
+  "description": "Final Four Color Bracket Prototype",
+  "url": "http://site.com",
+  "private": true,
+  "devDependencies": {
+    "grunt": "^1.0.1",
+    "grunt-contrib-sass": "^1.0.0",
+    "grunt-contrib-uglify": "^3.0.1",
+    "grunt-contrib-watch": "^1.0.0"
+  }
+}
